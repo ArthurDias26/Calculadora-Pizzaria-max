@@ -4,12 +4,12 @@ import Results from './components/Results'
 import AddPizzaModal from './components/AddPizzaModal'
 
 const PIZZAS_INICIAIS = [
-  { id: 1, nome: 'Calabresa', precoVenda: 52.0, custoIngredientes: 30.0, tempoFabricacao: 20, demandaMinima: 3, limiteMaximo: 12 },
-  { id: 2, nome: 'File com Fritas', precoVenda: 84.0, custoIngredientes: 73.0, tempoFabricacao: 25, demandaMinima: 1, limiteMaximo: 6 },
-  { id: 3, nome: 'Imperio', precoVenda: 58.0, custoIngredientes: 53.0, tempoFabricacao: 22, demandaMinima: 2, limiteMaximo: 10 },
-  { id: 4, nome: 'Abacaxi Nevada', precoVenda: 68.0, custoIngredientes: 33.0, tempoFabricacao: 18, demandaMinima: 1, limiteMaximo: 8 },
-  { id: 5, nome: 'Banana Nevada', precoVenda: 68.0, custoIngredientes: 33.0, tempoFabricacao: 18, demandaMinima: 1, limiteMaximo: 8 },
-  { id: 6, nome: 'Chocotine', precoVenda: 68.0, custoIngredientes: 33.0, tempoFabricacao: 20, demandaMinima: 2, limiteMaximo: 10 },
+  { id: 1, nome: 'Calabresa', precoVenda: 52.0, custoIngredientes: 30.0, tempoFabricacao: 15, demandaMinima: 3, limiteMaximo: 12 },
+  { id: 2, nome: 'File com Fritas', precoVenda: 84.0, custoIngredientes: 73.0, tempoFabricacao: 15, demandaMinima: 1, limiteMaximo: 6 },
+  { id: 3, nome: 'Imperio', precoVenda: 58.0, custoIngredientes: 53.0, tempoFabricacao: 15, demandaMinima: 2, limiteMaximo: 10 },
+  { id: 4, nome: 'Abacaxi Nevada', precoVenda: 68.0, custoIngredientes: 33.0, tempoFabricacao: 15, demandaMinima: 1, limiteMaximo: 8 },
+  { id: 5, nome: 'Banana Nevada', precoVenda: 68.0, custoIngredientes: 33.0, tempoFabricacao: 15, demandaMinima: 1, limiteMaximo: 8 },
+  { id: 6, nome: 'Chocotine', precoVenda: 68.0, custoIngredientes: 33.0, tempoFabricacao: 15, demandaMinima: 2, limiteMaximo: 10 },
 ]
 
 const STORAGE_KEY = 'pizzaria_dados'
