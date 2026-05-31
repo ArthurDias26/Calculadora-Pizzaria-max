@@ -4,12 +4,12 @@ import Results from './components/Results'
 import AddPizzaModal from './components/AddPizzaModal'
 
 const PIZZAS_INICIAIS = [
-  { id: 1, nome: 'Calabresa', precoVenda: 52.0, custoIngredientes: 30.0, tempoFabricacao: 15, demandaMinima: 3, limiteMaximo: 12 },
-  { id: 2, nome: 'File com Fritas', precoVenda: 84.0, custoIngredientes: 73.0, tempoFabricacao: 15, demandaMinima: 1, limiteMaximo: 6 },
-  { id: 3, nome: 'Imperio', precoVenda: 58.0, custoIngredientes: 53.0, tempoFabricacao: 15, demandaMinima: 2, limiteMaximo: 10 },
-  { id: 4, nome: 'Abacaxi Nevada', precoVenda: 68.0, custoIngredientes: 33.0, tempoFabricacao: 15, demandaMinima: 1, limiteMaximo: 8 },
-  { id: 5, nome: 'Banana Nevada', precoVenda: 68.0, custoIngredientes: 33.0, tempoFabricacao: 15, demandaMinima: 1, limiteMaximo: 8 },
-  { id: 6, nome: 'Chocotine', precoVenda: 68.0, custoIngredientes: 33.0, tempoFabricacao: 15, demandaMinima: 2, limiteMaximo: 10 },
+  { id: 1, nome: 'Calabresa', precoVenda: 52.0, custoIngredientes: 30.0, tempoFabricacao: 20, demandaMinima: 3, limiteMaximo: 12 },
+  { id: 2, nome: 'File com Fritas', precoVenda: 84.0, custoIngredientes: 73.0, tempoFabricacao: 25, demandaMinima: 1, limiteMaximo: 6 },
+  { id: 3, nome: 'Imperio', precoVenda: 58.0, custoIngredientes: 53.0, tempoFabricacao: 22, demandaMinima: 2, limiteMaximo: 10 },
+  { id: 4, nome: 'Abacaxi Nevada', precoVenda: 68.0, custoIngredientes: 33.0, tempoFabricacao: 18, demandaMinima: 1, limiteMaximo: 8 },
+  { id: 5, nome: 'Banana Nevada', precoVenda: 68.0, custoIngredientes: 33.0, tempoFabricacao: 18, demandaMinima: 1, limiteMaximo: 8 },
+  { id: 6, nome: 'Chocotine', precoVenda: 68.0, custoIngredientes: 33.0, tempoFabricacao: 20, demandaMinima: 2, limiteMaximo: 10 },
 ]
 
 const STORAGE_KEY = 'pizzaria_dados'
@@ -35,8 +35,8 @@ function salvarDados(pizzas, proxId) {
   }
 }
 
-function otimizar(pizzas, horasTotais, producaoMaxima, entregaMaxima) {
-  const tempoDisponivel = horasTotais * 60
+function otimizar(pizzas, horasTotais, producaoMaxima, entregaMaxima, numPizzaiolos) {
+  const tempoDisponivelPorPizzaiolo = horasTotais * 60
   const limiteTotal = Math.min(producaoMaxima, entregaMaxima)
 
   // Calcula lucro por pizza
@@ -46,54 +46,91 @@ function otimizar(pizzas, horasTotais, producaoMaxima, entregaMaxima) {
     lucroPorMinuto: (p.precoVenda - p.custoIngredientes) / p.tempoFabricacao,
   }))
 
+  // Simula pizzaiolos trabalhando independentemente
+  const pizzaiolos = Array(numPizzaiolos).fill(0).map(() => ({
+    tempoUsado: 0,
+    pizzasProduzidas: []
+  }))
+
+  // Inicializa quantidades
   const quantidades = {}
   pizzasComLucro.forEach(p => { quantidades[p.id] = 0 })
 
-  let tempoUsado = 0
   let totalProduzido = 0
 
   // FASE 1: Atender demandas minimas primeiro
-  const demandasAtendidas = []
   for (const pizza of pizzasComLucro) {
-    const demanda = pizza.demandaMinima || 0
-    if (demanda > 0) {
-      const tempoNecessario = demanda * pizza.tempoFabricacao
-      if (tempoUsado + tempoNecessario <= tempoDisponivel && totalProduzido + demanda <= limiteTotal && demanda <= pizza.limiteMaximo) {
-        quantidades[pizza.id] = demanda
-        tempoUsado += tempoNecessario
-        totalProduzido += demanda
-        demandasAtendidas.push(pizza.id)
+    const demandaMinima = pizza.demandaMinima || 0
+    if (demandaMinima === 0) continue
+
+    let qtdAProduzir = Math.min(demandaMinima, pizza.limiteMaximo, limiteTotal - totalProduzido)
+    if (qtdAProduzir <= 0) continue
+
+    // Distribuir producao entre pizzaiolos disponiveis
+    for (let i = 0; i < qtdAProduzir && totalProduzido < limiteTotal; i++) {
+      const pizzaioloDisponivel = pizzaiolos
+        .filter(p => p.tempoUsado + pizza.tempoFabricacao <= tempoDisponivelPorPizzaiolo)
+        .sort((a, b) => a.tempoUsado - b.tempoUsado)[0]
+
+      if (pizzaioloDisponivel) {
+        pizzaioloDisponivel.tempoUsado += pizza.tempoFabricacao
+        pizzaioloDisponivel.pizzasProduzidas.push(pizza.id)
+        quantidades[pizza.id]++
+        totalProduzido++
+      } else {
+        break
       }
     }
   }
 
   // FASE 2: Otimizar resto com greedy por lucro/minuto
-  const ordenadas = [...pizzasComLucro]
-    .filter(p => quantidades[p.id] < p.limiteMaximo)
-    .sort((a, b) => b.lucroPorMinuto - a.lucroPorMinuto)
+  // Continua iterando enquanto houver pizzaiolo disponivel
+  let alteracaoFez = true
+  while (alteracaoFez && totalProduzido < limiteTotal) {
+    alteracaoFez = false
 
-  for (const pizza of ordenadas) {
-    const qtdAtual = quantidades[pizza.id]
-    const espacoLivre = pizza.limiteMaximo - qtdAtual
-    const maxPorTempo = Math.floor((tempoDisponivel - tempoUsado) / pizza.tempoFabricacao)
-    const maxPorTotal = limiteTotal - totalProduzido
-    const adicional = Math.max(0, Math.min(espacoLivre, maxPorTempo, maxPorTotal))
+    const ordenadas = [...pizzasComLucro]
+      .filter(p => quantidades[p.id] < p.limiteMaximo)
+      .sort((a, b) => b.lucroPorMinuto - a.lucroPorMinuto)
 
-    quantidades[pizza.id] += adicional
-    tempoUsado += adicional * pizza.tempoFabricacao
-    totalProduzido += adicional
+    for (const pizza of ordenadas) {
+      if (totalProduzido >= limiteTotal) break
 
-    if (totalProduzido >= limiteTotal || tempoUsado >= tempoDisponivel) break
+      const pizzaioloDisponivel = pizzaiolos
+        .filter(p => p.tempoUsado + pizza.tempoFabricacao <= tempoDisponivelPorPizzaiolo)
+        .sort((a, b) => a.tempoUsado - b.tempoUsado)[0]
+
+      if (pizzaioloDisponivel) {
+        const espacoLivre = pizza.limiteMaximo - quantidades[pizza.id]
+        if (espacoLivre > 0) {
+          pizzaioloDisponivel.tempoUsado += pizza.tempoFabricacao
+          pizzaioloDisponivel.pizzasProduzidas.push(pizza.id)
+          quantidades[pizza.id]++
+          totalProduzido++
+          alteracaoFez = true
+        }
+      }
+    }
   }
+
+  // Calcula tempo total usado
+  const tempoTotalUsado = pizzaiolos.reduce((sum, p) => sum + p.tempoUsado, 0)
+  const tempoMaximoUsado = Math.max(...pizzaiolos.map(p => p.tempoUsado))
 
   const lucroTotal = pizzasComLucro.reduce((acc, p) => acc + p.lucroUnitario * quantidades[p.id], 0)
 
   return {
     quantidades,
     lucroTotal: parseFloat(lucroTotal.toFixed(2)),
-    tempoUsado,
+    tempoUsado: tempoTotalUsado,
+    tempoMaximoUsado,
     totalProduzido,
     pizzasComLucro,
+    pizzaiolos: pizzaiolos.map((p, i) => ({
+      id: i + 1,
+      tempoUsado: p.tempoUsado,
+      pizzasProduzidas: p.pizzasProduzidas.length
+    }))
   }
 }
 
@@ -101,7 +138,7 @@ export default function App() {
   const dadosSalvos = carregarDados()
   const [pizzas, setPizzas] = useState(dadosSalvos?.pizzas || PIZZAS_INICIAIS)
   const [proxId, setProxId] = useState(dadosSalvos?.proxId || 7)
-  const [config, setConfig] = useState({ horasTotais: 8, producaoMaxima: 50, entregaMaxima: 40 })
+  const [config, setConfig] = useState({ horasTotais: 8, producaoMaxima: 50, entregaMaxima: 40, numPizzaiolos: 1 })
   const [resultado, setResultado] = useState(null)
   const [modalAberto, setModalAberto] = useState(false)
 
@@ -138,7 +175,7 @@ export default function App() {
 
   function calcular() {
     if (pizzas.length === 0) return
-    const res = otimizar(pizzas, config.horasTotais, config.producaoMaxima, config.entregaMaxima)
+    const res = otimizar(pizzas, config.horasTotais, config.producaoMaxima, config.entregaMaxima, config.numPizzaiolos)
     setResultado(res)
   }
 
@@ -166,11 +203,11 @@ export default function App() {
 
         {/* Configurações Gerais */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-          <h2 className="text-lg font-semibold text-gray-700 mb-4">1. Configurações Gerais</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <h2 className="text-lg font-semibold text-gray-700 mb-4">1. Configuracoes Gerais</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-600 mb-1">
-                Horas totais disponíveis
+                Horas totais disponiveis
               </label>
               <input
                 type="number"
@@ -183,7 +220,20 @@ export default function App() {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-600 mb-1">
-                Produção máxima (pizzas/dia)
+                Numero de pizzaiolos
+              </label>
+              <input
+                type="number"
+                name="numPizzaiolos"
+                value={config.numPizzaiolos}
+                onChange={handleConfigChange}
+                min="1"
+                className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-600 mb-1">
+                Producao maxima (pizzas/dia)
               </label>
               <input
                 type="number"
@@ -196,7 +246,7 @@ export default function App() {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-600 mb-1">
-                Entregas máximas (pizzas/dia)
+                Entregas maximas (pizzas/dia)
               </label>
               <input
                 type="number"
@@ -208,6 +258,9 @@ export default function App() {
               />
             </div>
           </div>
+          <p className="text-xs text-gray-500 mt-3">
+            * Com {config.numPizzaiolos} pizzaiolo{config.numPizzaiolos > 1 ? 's' : ''}, e possivel produzir ate {config.numPizzaiolos} pizza{config.numPizzaiolos > 1 ? 's' : ''} simultaneamente.
+          </p>
         </div>
 
         {/* Cadastro de Pizzas */}

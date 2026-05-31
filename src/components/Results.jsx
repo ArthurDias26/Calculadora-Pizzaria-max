@@ -1,7 +1,7 @@
 export default function Results({ resultado, config }) {
-  const { quantidades, lucroTotal, tempoUsado, totalProduzido, pizzasComLucro } = resultado
-  const horasUsadas = Math.floor(tempoUsado / 60)
-  const minutosUsados = tempoUsado % 60
+  const { quantidades, lucroTotal, tempoMaximoUsado, totalProduzido, pizzasComLucro, pizzaiolos } = resultado
+  const horasUsadas = Math.floor(tempoMaximoUsado / 60)
+  const minutosUsados = Math.round(tempoMaximoUsado % 60)
 
   const pizzasNaProducao = pizzasComLucro.filter(p => quantidades[p.id] > 0)
 
@@ -23,7 +23,7 @@ export default function Results({ resultado, config }) {
             {horasUsadas}h {minutosUsados}min
           </p>
           <p className="text-xs text-blue-400 mt-1">
-            de {config.horasTotais}h disponíveis
+            de {config.horasTotais}h por pizzaiolo
           </p>
         </div>
         <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 text-center">
@@ -37,11 +37,29 @@ export default function Results({ resultado, config }) {
         </div>
       </div>
 
-      {/* Lista de produção */}
+      {/* Detalhes por pizzaiolo */}
+      {config.numPizzaiolos > 1 && pizzaiolos && (
+        <div className="mb-6">
+          <h3 className="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-3">
+            Distribuicao por Pizzaiolo
+          </h3>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
+            {pizzaiolos.map(p => (
+              <div key={p.id} className="bg-gray-50 border border-gray-200 rounded p-3 text-center">
+                <p className="text-xs font-semibold text-gray-600">Pizzaiolo {p.id}</p>
+                <p className="text-lg font-bold text-gray-800">{p.pizzasProduzidas} pizzas</p>
+                <p className="text-xs text-gray-500">{Math.floor(p.tempoUsado / 60)}h {p.tempoUsado % 60}min</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Lista de producao */}
       {pizzasNaProducao.length > 0 && (
         <div className="mb-6">
           <h3 className="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-3">
-            Plano de Produção
+            Plano de Producao
           </h3>
           <ul className="space-y-2">
             {pizzasNaProducao.map(p => (
@@ -114,19 +132,19 @@ export default function Results({ resultado, config }) {
         </div>
       </div>
 
-      {/* Modelo matemático */}
+      {/* Modelo matematico */}
       <div className="mt-6 bg-gray-50 rounded-lg border border-gray-200 p-4">
         <h3 className="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-2">
-          Modelo Matemático
+          Modelo Matematico
         </h3>
         <div className="text-sm text-gray-600 space-y-1 font-mono">
-          <p><span className="font-semibold">Maximizar:</span> Z = Σ (LucroUnitário × QuantidadeProduzida)</p>
+          <p><span className="font-semibold">Maximizar:</span> Z = Lucro Unitario x Quantidade Produzida</p>
           <p className="text-gray-400 text-xs mt-2 mb-1">Sujeito a:</p>
-          <p>1. Σ (TempoPizza × Qtd) ≤ {config.horasTotais * 60} min</p>
-          <p>2. Σ Qtd ≤ {config.producaoMaxima} (produção máx.)</p>
-          <p>3. Σ Qtd ≤ {config.entregaMaxima} (entrega máx.)</p>
-          <p>4. DemandMinima ≤ Qtd ≤ LimitMax, para cada pizza</p>
-          <p>5. Qtd ≥ 0, inteira</p>
+          <p>1. (TempoPizza x Qtd) / {config.numPizzaiolos} pizzaiolo{config.numPizzaiolos > 1 ? 's' : ''} nao deve exceder {config.horasTotais}h</p>
+          <p>2. Qtd nao deve exceder {config.producaoMaxima} (producao max.)</p>
+          <p>3. Qtd nao deve exceder {config.entregaMaxima} (entrega max.)</p>
+          <p>4. Demanda Minima nao deve exceder Qtd nem LimitMax, para cada pizza</p>
+          <p>5. Qtd deve ser maior ou igual a 0</p>
         </div>
       </div>
     </div>
