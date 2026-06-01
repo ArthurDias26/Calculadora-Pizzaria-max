@@ -39,10 +39,9 @@ export default function PizzaTable({ pizzas, onAdicionar, onRemover, onAtualizar
                   </td>
                   <td className="px-3 py-2">
                     <input
-                      type="number"
-                      value={pizza.precoVenda}
+                      type="text"
+                      value={pizza.precoVenda != 0 ? pizza.precoVenda : ''}
                       onChange={e => onAtualizar(pizza.id, 'precoVenda', e.target.value)}
-                      min="0"
                       step="0.01"
                       className="w-full border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-400"
                     />
@@ -50,9 +49,8 @@ export default function PizzaTable({ pizzas, onAdicionar, onRemover, onAtualizar
                   <td className="px-3 py-2">
                     <input
                       type="number"
-                      value={pizza.custoIngredientes}
+                      value={pizza.custoIngredientes != 0 ? pizza.custoIngredientes : ''}
                       onChange={e => onAtualizar(pizza.id, 'custoIngredientes', e.target.value)}
-                      min="0"
                       step="0.01"
                       className="w-full border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-400"
                     />
@@ -60,27 +58,24 @@ export default function PizzaTable({ pizzas, onAdicionar, onRemover, onAtualizar
                   <td className="px-3 py-2">
                     <input
                       type="number"
-                      value={pizza.tempoFabricacao}
+                      value={pizza.tempoFabricacao != 0 ? pizza.tempoFabricacao : ''}
                       onChange={e => onAtualizar(pizza.id, 'tempoFabricacao', e.target.value)}
-                      min="1"
                       className="w-full border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-400"
                     />
                   </td>
                   <td className="px-3 py-2">
                     <input
                       type="number"
-                      value={pizza.demandaMinima || 0}
+                      value={pizza.demandaMinima != 0 ? pizza.demandaMinima : ''}
                       onChange={e => onAtualizar(pizza.id, 'demandaMinima', e.target.value)}
-                      min="0"
                       className="w-full border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-400"
                     />
                   </td>
                   <td className="px-3 py-2">
                     <input
                       type="number"
-                      value={pizza.limiteMaximo}
+                      value={pizza.limiteMaximo != 0 ? pizza.limiteMaximo : ''}
                       onChange={e => onAtualizar(pizza.id, 'limiteMaximo', e.target.value)}
-                      min="0"
                       className="w-full border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-400"
                     />
                   </td>
