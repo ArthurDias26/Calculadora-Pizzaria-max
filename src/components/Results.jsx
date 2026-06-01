@@ -37,44 +37,9 @@ export default function Results({ resultado, config }) {
         </div>
       </div>
 
-      {/* Detalhes por pizzaiolo */}
-      {config.numPizzaiolos > 1 && pizzaiolos && (
-        <div className="mb-6">
-          <h3 className="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-3">
-            Distribuicao por Pizzaiolo
-          </h3>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
-            {pizzaiolos.map(p => (
-              <div key={p.id} className="bg-gray-50 border border-gray-200 rounded p-3 text-center">
-                <p className="text-xs font-semibold text-gray-600">Pizzaiolo {p.id}</p>
-                <p className="text-lg font-bold text-gray-800">{p.pizzasProduzidas} pizzas</p>
-                <p className="text-xs text-gray-500">{Math.floor(p.tempoUsado / 60)}h {p.tempoUsado % 60}min</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      
 
-      {/* Lista de producao */}
-      {pizzasNaProducao.length > 0 && (
-        <div className="mb-6">
-          <h3 className="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-3">
-            Plano de Producao
-          </h3>
-          <ul className="space-y-2">
-            {pizzasNaProducao.map(p => (
-              <li key={p.id} className="flex items-center gap-2 text-sm text-gray-700">
-                <span className="w-2 h-2 rounded-full bg-blue-500 flex-shrink-0"></span>
-                <span className="font-medium">
-                  {p.nome || `Pizza ${p.id}`}
-                </span>
-                <span className="text-gray-400">→</span>
-                <span>produzir <strong>{quantidades[p.id]}</strong> unidade{quantidades[p.id] !== 1 ? 's' : ''}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+  
 
       {/* Tabela detalhada */}
       <div>
