@@ -109,7 +109,7 @@ export default function PizzaTable({ pizzas, onAdicionar, onRemover, onAtualizar
           onClick={onLimpar}
           className="border border-gray-400 text-gray-600 hover:bg-gray-50 font-medium text-sm px-4 py-2 rounded transition-colors"
         >
-          Limpar Dados
+          Carregar Dados
         </button>
       </div>
     </div>
